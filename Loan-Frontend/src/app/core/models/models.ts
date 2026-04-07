@@ -70,8 +70,8 @@ export interface DisbursementRequest {
   ifscCode: string; bankName: string; disbursementDate: string;
 }
 export interface DisbursementResponse {
-  id: number; applicationId: number; amount: number; accountNumber: string;
-  ifscCode: string; bankName: string; disbursementDate: string; status: string; createdAt: string;
+  disbursementId: number; applicationId: number; amount: number; accountNumber: string;
+  ifscCode: string; bankName: string; disbursementDate: string; status: string;
 }
 export interface RepaymentScheduleResponse {
   id: number; disbursementId: number; installmentNumber: number;

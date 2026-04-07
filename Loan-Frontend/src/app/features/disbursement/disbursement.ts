@@ -58,7 +58,7 @@ export class DisbursementComponent {
         // 2. Auto-create loan account in servicing
         this.servicingSvc.createAccount({
           applicationId: r.data.applicationId,
-          disbursementId: r.data.id,
+          disbursementId: r.data.disbursementId,
           outstandingBalance: r.data.amount,
           nextDueDate: this.form.disbursementDate,
           emiAmount: 0
@@ -66,7 +66,7 @@ export class DisbursementComponent {
 
         // 3. Admin notification
         this.notif.push(
-          `Disbursement #${r.data.id} — ₹${r.data.amount} disbursed for App #${r.data.applicationId}`,
+          `Disbursement #${r.data.disbursementId} — ₹${r.data.amount} disbursed for App #${r.data.applicationId}`,
           'fa-money-bill-transfer', '#10b981'
         );
 
@@ -84,7 +84,7 @@ export class DisbursementComponent {
 
   updateStatus(status: string) {
     if (!this.disbursement) return;
-    this.svc.updateStatus(this.disbursement.id, status).subscribe({
+    this.svc.updateStatus(this.disbursement.disbursementId, status).subscribe({
       next: r => { this.disbursement = r.data; this.success = 'Status updated!'; setTimeout(() => this.success = '', 3000); },
       error: () => {}
     });
@@ -93,7 +93,7 @@ export class DisbursementComponent {
   generateSchedule() {
     if (!this.disbursement || !this.scheduleStartDate) return;
     this.saving = true;
-    this.svc.generateSchedule(this.disbursement.id, { startDate: this.scheduleStartDate }).subscribe({
+    this.svc.generateSchedule(this.disbursement.disbursementId, { startDate: this.scheduleStartDate }).subscribe({
       next: r => {
         this.schedule = r.data ?? [];
         this.showScheduleModal = false;
@@ -101,7 +101,7 @@ export class DisbursementComponent {
         this.success = 'Schedule generated!';
         setTimeout(() => this.success = '', 3000);
         this.notif.push(
-          `Repayment schedule generated for Disbursement #${this.disbursement!.id} — ${this.schedule.length} installments`,
+          `Repayment schedule generated for Disbursement #${this.disbursement!.disbursementId} — ${this.schedule.length} installments`,
           'fa-calendar-days', '#6366f1'
         );
         this.schedule.forEach(s => {

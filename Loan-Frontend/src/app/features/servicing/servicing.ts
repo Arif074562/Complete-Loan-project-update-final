@@ -73,8 +73,7 @@ export class ServicingComponent implements OnInit {
 
   openRepayment(id: number) {
     this.selectedAccountId = id;
-    this.repaymentForm = this.emptyRepayment();
-    this.repaymentForm.loanAccountId = id;
+    this.repaymentForm = { loanAccountId: id, amount: 0, paymentDate: '', mode: 'ONLINE', referenceNumber: '' };
     this.showRepaymentModal = true; this.error = '';
   }
 

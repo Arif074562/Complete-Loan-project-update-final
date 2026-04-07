@@ -86,15 +86,11 @@ public class DisbursementServiceImpl implements DisbursementService {
                 .orElseThrow(() -> new ResourceNotFoundException("Disbursement not found with id: " + disbursementId));
 
         double principal = disbursement.getAmount().doubleValue();
-        double annualRate = request.getAnnualInterestRate().doubleValue();
-        int n = request.getTenureMonths();
-        LocalDate startDate = disbursement.getDisbursementDate();
-        Long loanAccountId = request.getLoanAccountId();
+        double annualRate = 12.0; // Default 12% annual interest
+        int n = 12; // Default 12 months tenure
+        LocalDate startDate = LocalDate.parse(request.getStartDate());
 
         double r = annualRate / 12.0 / 100.0;
-        if (r <= 0 || n <= 0) {
-            throw new BusinessException("Invalid rate or tenure");
-        }
         double emi = principal * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
         double outstandingBalance = principal;
 
@@ -109,7 +105,7 @@ public class DisbursementServiceImpl implements DisbursementService {
             }
 
             RepaymentSchedule schedule = RepaymentSchedule.builder()
-                    .loanAccountId(loanAccountId)
+                    .loanAccountId(disbursementId)
                     .installmentNo(i)
                     .dueDate(startDate.plusMonths(i))
                     .principalComponent(BigDecimal.valueOf(principalComponent).setScale(2, RoundingMode.HALF_UP))
@@ -121,7 +117,7 @@ public class DisbursementServiceImpl implements DisbursementService {
             schedules.add(schedule);
         }
 
-        log.info("Generated {} installments for loan account: {}", schedules.size(), loanAccountId);
+        log.info("Generated {} installments for disbursement: {}", schedules.size(), disbursementId);
         return schedules.stream().map(repaymentScheduleMapper::toResponseDTO).collect(Collectors.toList());
     }
 }

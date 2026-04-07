@@ -17,7 +17,7 @@
     <div class="detail-header">
       <div class="detail-icon"><i class="fa-solid fa-money-bill-transfer"></i></div>
       <div>
-        <h4>Disbursement #{{ disbursement.id }}</h4>
+        <h4>Disbursement #{{ disbursement.disbursementId }}</h4>
         <p>Application #{{ disbursement.applicationId }}</p>
       </div>
       <span class="status-badge ms-auto" [ngClass]="getStatusClass(disbursement.status)">{{ disbursement.status }}</span>

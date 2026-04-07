@@ -21,6 +21,9 @@ public class Disbursement {
 
     private Long applicationId;
     private BigDecimal amount;
+    private String accountNumber;
+    private String ifscCode;
+    private String bankName;
     private LocalDate disbursementDate;
 
     @Enumerated(EnumType.STRING)

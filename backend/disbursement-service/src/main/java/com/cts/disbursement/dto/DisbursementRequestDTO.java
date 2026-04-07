@@ -20,5 +20,14 @@ public class DisbursementRequestDTO {
     @DecimalMin(value = "0.01", message = "Amount must be positive")
     private BigDecimal amount;
 
+    @NotNull(message = "Account number is required")
+    private String accountNumber;
+
+    @NotNull(message = "IFSC code is required")
+    private String ifscCode;
+
+    @NotNull(message = "Bank name is required")
+    private String bankName;
+
     private LocalDate disbursementDate;
 }

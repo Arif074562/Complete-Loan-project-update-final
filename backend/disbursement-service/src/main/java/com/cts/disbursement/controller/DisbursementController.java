@@ -48,9 +48,11 @@ public class DisbursementController {
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<DisbursementResponseDTO>> updateStatus(@PathVariable Long id,
-                                                                              @RequestBody DisbursementStatus status) {
-        log.info("PATCH /api/disbursements/{}/status", id);
-        DisbursementResponseDTO dto = disbursementService.updateStatus(id, status);
+                                                                              @RequestBody String status) {
+        log.info("PATCH /api/disbursements/{}/status - raw status: {}", id, status);
+        String cleanStatus = status.replace("\"", "").trim();
+        DisbursementStatus disbursementStatus = DisbursementStatus.valueOf(cleanStatus);
+        DisbursementResponseDTO dto = disbursementService.updateStatus(id, disbursementStatus);
         return ResponseEntity.ok(ApiResponse.success("Status updated", dto));
     }
 

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-04-07T17:06:10+0530",
+    date = "2026-04-07T18:14:06+0530",
     comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.45.0.v20260224-0835, environment: Java 21.0.10 (Eclipse Adoptium)"
 )
 @Component
@@ -27,6 +27,9 @@ public class DisbursementMapperImpl implements DisbursementMapper {
         disbursementResponseDTO.disbursementId( entity.getDisbursementId() );
         disbursementResponseDTO.applicationId( entity.getApplicationId() );
         disbursementResponseDTO.amount( entity.getAmount() );
+        disbursementResponseDTO.accountNumber( entity.getAccountNumber() );
+        disbursementResponseDTO.ifscCode( entity.getIfscCode() );
+        disbursementResponseDTO.bankName( entity.getBankName() );
         disbursementResponseDTO.disbursementDate( entity.getDisbursementDate() );
         disbursementResponseDTO.status( entity.getStatus() );
 
@@ -41,8 +44,11 @@ public class DisbursementMapperImpl implements DisbursementMapper {
 
         Disbursement.DisbursementBuilder disbursement = Disbursement.builder();
 
-        disbursement.amount( dto.getAmount() );
         disbursement.applicationId( dto.getApplicationId() );
+        disbursement.amount( dto.getAmount() );
+        disbursement.accountNumber( dto.getAccountNumber() );
+        disbursement.ifscCode( dto.getIfscCode() );
+        disbursement.bankName( dto.getBankName() );
         disbursement.disbursementDate( dto.getDisbursementDate() );
 
         return disbursement.build();

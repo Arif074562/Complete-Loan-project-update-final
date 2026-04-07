@@ -108,10 +108,11 @@
 <!-- Repayment Modal -->
 <div class="modal-overlay" *ngIf="showRepaymentModal" (click)="showRepaymentModal=false">
   <div class="modal-box fade-in" (click)="$event.stopPropagation()">
-    <div class="modal-header"><h5>Record Repayment — Account #{{ selectedAccountId }}</h5><button class="close-btn" (click)="showRepaymentModal=false"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-header"><h5>Record Repayment — Account #{{ repaymentForm.loanAccountId }}</h5><button class="close-btn" (click)="showRepaymentModal=false"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body">
       <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
       <form (ngSubmit)="saveRepayment()" #rf="ngForm">
+        <input type="hidden" [(ngModel)]="repaymentForm.loanAccountId" name="loanAccId">
         <div class="form-grid">
           <div class="mb-3"><label class="form-label">Amount (₹) *</label><input type="number" class="form-control" [(ngModel)]="repaymentForm.amount" name="amt" required></div>
           <div class="mb-3"><label class="form-label">Payment Date *</label><input type="date" class="form-control" [(ngModel)]="repaymentForm.paymentDate" name="pd" required></div>
