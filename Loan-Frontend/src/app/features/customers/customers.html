@@ -1,0 +1,140 @@
+<div class="fade-in">
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Customers</h2>
+      <p class="page-subtitle">Manage customer profiles and KYC data</p>
+    </div>
+    <button class="btn btn-primary" (click)="openCreate()">
+      <i class="fa-solid fa-plus me-2"></i>
+      {{ isCustomer ? 'Register Yourself' : 'Add Customer' }}
+    </button>
+  </div>
+
+  <div class="card p-0">
+    <div class="table-toolbar">
+      <span class="record-count">{{ totalElements }} customers</span>
+    </div>
+    @if (loadError && !loading) {
+      <div class="alert alert-danger m-3">{{ loadError }}</div>
+    }
+    @if (loading) {
+      <div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
+    }
+    @if (!loading) {
+      <div class="table-responsive">
+        <table class="table-modern">
+          <thead>
+            <tr>
+              <th>ID</th><th>Name</th><th>Email</th><th>Phone</th>
+              <th>Segment</th><th>KYC</th><th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of customers; track c.customerId; let i = $index) {
+              <tr>
+                <td><span class="id-badge">#{{ i + 1 }}</span></td>
+                <td>
+                  <div class="name-cell">
+                    <div class="name-avatar">{{ (c.firstName || '?').charAt(0).toUpperCase() }}</div>
+                    {{ c.firstName || '—' }} {{ c.lastName }}
+                  </div>
+                </td>
+                <td>{{ c.email || '—' }}</td>
+                <td>{{ c.phone || '—' }}</td>
+                <td><span class="status-badge badge-info">{{ c.segment }}</span></td>
+                <td>
+                  @if (isAdmin && c.customerId > 0) {
+                    <select class="kyc-select" [value]="c.kycStatus" (change)="updateKyc(c.customerId, $any($event.target).value)">
+                      <option>PENDING</option><option>VERIFIED</option><option>REJECTED</option>
+                    </select>
+                  } @else {
+                    <span class="status-badge" [ngClass]="getKycClass(c.kycStatus)">{{ c.kycStatus }}</span>
+                  }
+                </td>
+                <td><span class="status-badge" [ngClass]="getStatusClass(c.status)">{{ c.status }}</span></td>
+                <td>
+                  @if (isAdmin && c.customerId > 0) {
+                    <button class="action-btn" (click)="openEdit(c)" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                    <button class="action-btn delete-btn" (click)="deleteCustomer(c.customerId)" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                  } @else if (!isAdmin && !isCustomer && c.customerId > 0) {
+                    <button class="action-btn" (click)="openEdit(c)" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                  } @else {
+                    <span>—</span>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="8" class="empty-state">No customers found</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    @if (totalPages > 1) {
+      <div class="table-footer">
+        <nav><ul class="pagination mb-0">
+          <li class="page-item" [class.disabled]="currentPage === 0"><a class="page-link" (click)="goPage(currentPage-1)">‹</a></li>
+          @for (p of pages; track p) {
+            <li class="page-item" [class.active]="p === currentPage"><a class="page-link" (click)="goPage(p)">{{ p+1 }}</a></li>
+          }
+          <li class="page-item" [class.disabled]="currentPage === totalPages-1"><a class="page-link" (click)="goPage(currentPage+1)">›</a></li>
+        </ul></nav>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Toast -->
+@if (toast) {
+  <div class="toast-container">
+    <div class="toast-msg">
+      <i class="fa-solid fa-circle-check"></i> {{ toast }}
+    </div>
+  </div>
+}
+
+<!-- Modal -->
+@if (showModal) {
+  <div class="modal-overlay" (click)="showModal=false">
+    <div class="modal-box fade-in" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h5>{{ editMode ? 'Edit Customer' : (isCustomer ? 'Register as Customer' : 'New Customer') }}</h5>
+        <button class="close-btn" (click)="showModal=false"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        @if (error) {
+          <div class="alert alert-danger">{{ error }}</div>
+        }
+        <form (ngSubmit)="save()" #f="ngForm">
+          <div class="form-grid">
+            <div class="mb-3"><label class="form-label">First Name *</label><input class="form-control" [(ngModel)]="form.firstName" name="fn" required></div>
+            <div class="mb-3"><label class="form-label">Last Name *</label><input class="form-control" [(ngModel)]="form.lastName" name="ln" required></div>
+            <div class="mb-3"><label class="form-label">Email *</label><input type="email" class="form-control" [(ngModel)]="form.email" name="em" required></div>
+            <div class="mb-3"><label class="form-label">Phone *</label><input class="form-control" [(ngModel)]="form.phone" name="ph" required></div>
+            <div class="mb-3"><label class="form-label">Date of Birth</label><input type="date" class="form-control" [(ngModel)]="form.dateOfBirth" name="dob"></div>
+            @if (!isCustomer) {
+              <div class="mb-3"><label class="form-label">Segment</label>
+                <select class="form-select" [(ngModel)]="form.segment" name="seg">
+                  <option>RETAIL</option><option>SME</option><option>CORPORATE</option><option>PREMIUM</option>
+                </select>
+              </div>
+            }
+            <div class="mb-3"><label class="form-label">PAN Number</label><input class="form-control" [(ngModel)]="form.panNumber" name="pan"></div>
+            <div class="mb-3"><label class="form-label">Aadhar Number</label><input class="form-control" [(ngModel)]="form.aadharNumber" name="aadhar"></div>
+            <div class="mb-3 col-span-2"><label class="form-label">Address</label><input class="form-control" [(ngModel)]="form.address" name="addr"></div>
+            <div class="mb-3"><label class="form-label">City</label><input class="form-control" [(ngModel)]="form.city" name="city"></div>
+            <div class="mb-3"><label class="form-label">State</label><input class="form-control" [(ngModel)]="form.state" name="state"></div>
+            <div class="mb-3"><label class="form-label">PIN Code</label><input class="form-control" [(ngModel)]="form.pinCode" name="pin"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" (click)="showModal=false">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving || f.invalid">
+              @if (saving) { <i class="fa-solid fa-spinner fa-spin me-1"></i> }
+              {{ editMode ? 'Update' : 'Create' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,39 @@
+<aside class="sidebar" [class.collapsed]="collapsed">
+  <div class="sidebar-brand">
+    <div class="brand-icon">
+      <i class="fa-solid fa-landmark"></i>
+    </div>
+    <span class="brand-text" *ngIf="!collapsed">
+      <span class="brand-name">LoanSys</span>
+      <span class="brand-sub">360</span>
+    </span>
+    <button class="toggle-btn" (click)="toggleSidebar.emit()">
+      <i class="fa-solid" [class.fa-chevron-left]="!collapsed" [class.fa-chevron-right]="collapsed"></i>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a *ngFor="let item of visibleItems"
+       [routerLink]="item.route"
+       routerLinkActive="active"
+       class="nav-item"
+       [title]="collapsed ? item.label : ''">
+      <i class="fa-solid {{ item.icon }} nav-icon"></i>
+      <span class="nav-label" *ngIf="!collapsed">{{ item.label }}</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-info" *ngIf="!collapsed">
+      <div class="user-avatar">{{ auth.getCurrentUser()?.name?.charAt(0)?.toUpperCase() }}</div>
+      <div class="user-details">
+        <div class="user-name">{{ auth.getCurrentUser()?.name }}</div>
+        <div class="user-role">{{ auth.getCurrentUser()?.role }}</div>
+      </div>
+    </div>
+    <button class="logout-btn" (click)="logout()" [title]="collapsed ? 'Logout' : ''">
+      <i class="fa-solid fa-right-from-bracket"></i>
+      <span *ngIf="!collapsed">Logout</span>
+    </button>
+  </div>
+</aside>

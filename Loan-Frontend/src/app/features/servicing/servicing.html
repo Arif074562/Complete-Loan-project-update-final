@@ -1,0 +1,134 @@
+<div class="fade-in">
+  <div class="page-header">
+    <div><h2 class="page-title">Loan Servicing</h2><p class="page-subtitle">Manage loan accounts and track repayments</p></div>
+    <button class="btn btn-primary" (click)="openAccountModal()">
+      <i class="fa-solid fa-plus me-2"></i>New Account
+    </button>
+  </div>
+
+  <div class="alert alert-success" *ngIf="success"><i class="fa-solid fa-circle-check me-2"></i>{{ success }}</div>
+  <div class="alert alert-danger" *ngIf="error"><i class="fa-solid fa-circle-xmark me-2"></i>{{ error }}</div>
+
+  <!-- Overdue Alert -->
+  <div class="overdue-alert" *ngIf="overdueAccounts.length > 0">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span><strong>{{ overdueAccounts.length }} overdue account(s)</strong> detected. Flag them to Collections below.</span>
+  </div>
+
+  <div class="servicing-layout">
+    <div class="card p-0">
+      <div class="table-toolbar"><span class="record-count">{{ totalElements }} loan accounts</span></div>
+      <div *ngIf="loading" class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
+      <div class="table-responsive" *ngIf="!loading">
+        <table class="table-modern">
+          <thead>
+            <tr><th>ID</th><th>App ID</th><th>Outstanding</th><th>EMI</th><th>Next Due</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of accounts" [class.overdue-row]="isOverdue(a)">
+              <td><span class="id-badge">#{{ a.id }}</span></td>
+              <td>#{{ a.applicationId }}</td>
+              <td>₹{{ a.outstandingBalance | number }}</td>
+              <td>₹{{ a.emiAmount | number }}</td>
+              <td>
+                {{ a.nextDueDate | date:'mediumDate' }}
+                <span class="overdue-chip" *ngIf="isOverdue(a)">{{ daysPastDue(a) }}d overdue</span>
+              </td>
+              <td>
+                <select class="status-select" [value]="a.status" (change)="updateStatus(a.id, $any($event.target).value)">
+                  <option *ngFor="let s of accountStatuses" [value]="s">{{ s }}</option>
+                </select>
+              </td>
+              <td class="actions-cell">
+                <button class="action-btn" (click)="openRepayment(a.id)" title="Record Repayment"><i class="fa-solid fa-money-bill"></i></button>
+                <button class="action-btn" (click)="viewRepayments(a.id)" title="View Repayments"><i class="fa-solid fa-list"></i></button>
+                <button class="action-btn flag-btn" (click)="flagOverdue(a)" title="Flag to Collections" *ngIf="isOverdue(a)">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="accounts.length===0"><td colspan="7" class="empty-state">No accounts found</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer" *ngIf="totalPages > 1">
+        <nav><ul class="pagination mb-0">
+          <li class="page-item" [class.disabled]="currentPage===0"><a class="page-link" (click)="goPage(currentPage-1)">‹</a></li>
+          <li class="page-item" *ngFor="let p of pages" [class.active]="p===currentPage"><a class="page-link" (click)="goPage(p)">{{ p+1 }}</a></li>
+          <li class="page-item" [class.disabled]="currentPage===totalPages-1"><a class="page-link" (click)="goPage(currentPage+1)">›</a></li>
+        </ul></nav>
+      </div>
+    </div>
+
+    <!-- Repayments Panel -->
+    <div class="card p-0 repayments-panel" *ngIf="repayments.length > 0">
+      <div class="card-header-custom"><h3 class="card-title">Repayments — Account #{{ selectedAccountId }}</h3></div>
+      <table class="table-modern">
+        <thead><tr><th>ID</th><th>Amount</th><th>Date</th><th>Mode</th><th>Ref</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let r of repayments">
+            <td><span class="id-badge">#{{ r.id }}</span></td>
+            <td>₹{{ r.amount | number }}</td>
+            <td>{{ r.paymentDate | date:'mediumDate' }}</td>
+            <td>{{ r.mode }}</td>
+            <td>{{ r.referenceNumber }}</td>
+            <td><span class="status-badge" [ngClass]="getRepaymentClass(r.status)">{{ r.status }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Account Modal -->
+<div class="modal-overlay" *ngIf="showAccountModal" (click)="showAccountModal=false">
+  <div class="modal-box fade-in" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h5>New Loan Account</h5><button class="close-btn" (click)="showAccountModal=false"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+      <form (ngSubmit)="saveAccount()" #f="ngForm">
+        <div class="form-grid">
+          <div class="mb-3"><label class="form-label">Application ID *</label><input type="number" class="form-control" [(ngModel)]="accountForm.applicationId" name="aid" required></div>
+          <div class="mb-3"><label class="form-label">Disbursement ID *</label><input type="number" class="form-control" [(ngModel)]="accountForm.disbursementId" name="did" required></div>
+          <div class="mb-3"><label class="form-label">Outstanding Balance (₹) *</label><input type="number" class="form-control" [(ngModel)]="accountForm.outstandingBalance" name="ob" required></div>
+          <div class="mb-3"><label class="form-label">EMI Amount (₹) *</label><input type="number" class="form-control" [(ngModel)]="accountForm.emiAmount" name="emi" required></div>
+          <div class="mb-3"><label class="form-label">Next Due Date *</label><input type="date" class="form-control" [(ngModel)]="accountForm.nextDueDate" name="ndd" required></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="showAccountModal=false">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving || f.invalid">
+            <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="saving"></i>Create
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Repayment Modal -->
+<div class="modal-overlay" *ngIf="showRepaymentModal" (click)="showRepaymentModal=false">
+  <div class="modal-box fade-in" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h5>Record Repayment — Account #{{ selectedAccountId }}</h5><button class="close-btn" (click)="showRepaymentModal=false"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+      <form (ngSubmit)="saveRepayment()" #rf="ngForm">
+        <div class="form-grid">
+          <div class="mb-3"><label class="form-label">Amount (₹) *</label><input type="number" class="form-control" [(ngModel)]="repaymentForm.amount" name="amt" required></div>
+          <div class="mb-3"><label class="form-label">Payment Date *</label><input type="date" class="form-control" [(ngModel)]="repaymentForm.paymentDate" name="pd" required></div>
+          <div class="mb-3"><label class="form-label">Mode *</label>
+            <select class="form-select" [(ngModel)]="repaymentForm.mode" name="mode" required>
+              <option *ngFor="let m of repaymentModes" [value]="m">{{ m }}</option>
+            </select>
+          </div>
+          <div class="mb-3"><label class="form-label">Reference Number</label><input class="form-control" [(ngModel)]="repaymentForm.referenceNumber" name="ref"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="showRepaymentModal=false">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving || rf.invalid">
+            <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="saving"></i>Record
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

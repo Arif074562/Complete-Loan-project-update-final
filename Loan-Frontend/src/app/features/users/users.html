@@ -1,0 +1,55 @@
+<div class="fade-in">
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Users</h2>
+      <p class="page-subtitle">System users and roles</p>
+    </div>
+  </div>
+
+  <div class="card p-0">
+    <div class="table-toolbar">
+      <span class="record-count">{{ users.length }} users</span>
+    </div>
+    @if (loading) {
+      <div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
+    }
+    @if (error) {
+      <div class="alert alert-danger m-3">{{ error }}</div>
+    }
+    @if (!loading && !error) {
+      <div class="table-responsive">
+        <table class="table-modern">
+          <thead>
+            <tr>
+              <th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Status</th><th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of users; track u.userId) {
+              <tr>
+                <td><span class="id-badge">#{{ u.userId }}</span></td>
+                <td>
+                  <div class="name-cell">
+                    <div class="name-avatar">{{ u.name.charAt(0).toUpperCase() }}</div>
+                    {{ u.name }}
+                  </div>
+                </td>
+                <td>{{ u.email }}</td>
+                <td>{{ u.phone || '—' }}</td>
+                <td><span class="status-badge" [ngClass]="getRoleClass(u.role)">{{ u.role }}</span></td>
+                <td>
+                  <span class="status-badge" [ngClass]="u.isActive ? 'badge-success' : 'badge-danger'">
+                    {{ u.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td>{{ u.createdAt | date:'mediumDate' }}</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="7" class="empty-state">No users found</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

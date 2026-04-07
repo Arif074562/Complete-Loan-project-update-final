@@ -1,0 +1,157 @@
+<div class="login-page">
+
+  <!-- Left Panel -->
+  <div class="login-left">
+    <div class="login-brand">
+      <div class="brand-icon-lg"><i class="fa-solid fa-landmark"></i></div>
+      <h1>LoanSys<span>360</span></h1>
+      <p>Modern Loan Lifecycle Management Platform</p>
+    </div>
+    <div class="feature-list">
+      <div class="feature-item" *ngFor="let f of features">
+        <div class="feature-icon"><i class="fa-solid {{ f.icon }}"></i></div>
+        <div>
+          <div class="feature-title">{{ f.title }}</div>
+          <div class="feature-desc">{{ f.desc }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="login-right">
+    <div class="login-card fade-in">
+
+      <!-- Tab Switcher -->
+      <div class="auth-tabs">
+        <button class="auth-tab" [class.active]="activeTab === 'login'" (click)="switchTab('login')">
+          <i class="fa-solid fa-right-to-bracket me-2"></i>Sign In
+        </button>
+        <button class="auth-tab" [class.active]="activeTab === 'signup'" (click)="switchTab('signup')">
+          <i class="fa-solid fa-user-plus me-2"></i>Sign Up
+        </button>
+      </div>
+
+      <!-- Alerts -->
+      <div class="alert alert-danger mt-3" *ngIf="error">
+        <i class="fa-solid fa-circle-exclamation me-2"></i>{{ error }}
+      </div>
+      <div class="alert alert-success mt-3" *ngIf="success">
+        <i class="fa-solid fa-circle-check me-2"></i>{{ success }}
+      </div>
+
+      <!-- ── LOGIN FORM ── -->
+      <div *ngIf="activeTab === 'login'" class="tab-panel fade-in">
+        <div class="login-header">
+          <h2>Welcome back</h2>
+          <p>Sign in with your email address</p>
+        </div>
+        <form (ngSubmit)="login()" #loginForm="ngForm">
+          <div class="mb-3">
+            <label class="form-label">Email Address</label>
+            <div class="input-group-custom">
+              <i class="fa-solid fa-envelope input-icon"></i>
+              <input type="email" class="form-control ps-input" [(ngModel)]="loginEmail"
+                     name="loginEmail" placeholder="you@example.com" required autocomplete="email">
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Password</label>
+            <div class="input-group-custom">
+              <i class="fa-solid fa-lock input-icon"></i>
+              <input [type]="showLoginPassword ? 'text' : 'password'" class="form-control ps-input"
+                     [(ngModel)]="loginPassword" name="loginPassword" placeholder="Enter password"
+                     required autocomplete="current-password">
+              <button type="button" class="eye-btn" (click)="showLoginPassword = !showLoginPassword">
+                <i class="fa-solid" [class.fa-eye]="!showLoginPassword" [class.fa-eye-slash]="showLoginPassword"></i>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 login-btn" [disabled]="loading">
+            <span *ngIf="!loading"><i class="fa-solid fa-right-to-bracket me-2"></i>Sign In</span>
+            <span *ngIf="loading"><i class="fa-solid fa-spinner fa-spin me-2"></i>Signing in...</span>
+          </button>
+        </form>
+        <p class="switch-hint">
+          Don't have an account? <a (click)="switchTab('signup')">Create one</a>
+        </p>
+      </div>
+
+      <!-- ── SIGNUP FORM ── -->
+      <div *ngIf="activeTab === 'signup'" class="tab-panel fade-in">
+        <div class="login-header">
+          <h2>Create account</h2>
+          <p>Register to access LoanSys360</p>
+        </div>
+        <form (ngSubmit)="register()" #regForm="ngForm">
+          <div class="form-row-2">
+            <div class="mb-3">
+              <label class="form-label">Full Name *</label>
+              <div class="input-group-custom">
+                <i class="fa-solid fa-id-card input-icon"></i>
+                <input type="text" class="form-control ps-input" [(ngModel)]="regName"
+                       name="regName" placeholder="Kumar Sanu" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Phone</label>
+              <div class="input-group-custom">
+                <i class="fa-solid fa-phone input-icon"></i>
+                <input type="tel" class="form-control ps-input" [(ngModel)]="regPhone"
+                       name="regPhone" placeholder="10-digit number" maxlength="10">
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email Address *</label>
+            <div class="input-group-custom">
+              <i class="fa-solid fa-envelope input-icon"></i>
+              <input type="email" class="form-control ps-input" [(ngModel)]="regEmail"
+                     name="regEmail" placeholder="you@example.com" required autocomplete="email">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Role *</label>
+            <div class="input-group-custom">
+              <i class="fa-solid fa-briefcase input-icon"></i>
+              <select class="form-select ps-input" [(ngModel)]="regRole" name="regRole" required>
+                <option *ngFor="let r of roles" [value]="r.value">{{ r.label }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="mb-3">
+              <label class="form-label">Password *</label>
+              <div class="input-group-custom">
+                <i class="fa-solid fa-lock input-icon"></i>
+                <input [type]="showRegPassword ? 'text' : 'password'" class="form-control ps-input"
+                       [(ngModel)]="regPassword" name="regPassword" placeholder="Min 8 chars"
+                       required autocomplete="new-password">
+                <button type="button" class="eye-btn" (click)="showRegPassword = !showRegPassword">
+                  <i class="fa-solid" [class.fa-eye]="!showRegPassword" [class.fa-eye-slash]="showRegPassword"></i>
+                </button>
+              </div>
+            </div>
+            <div class="mb-4">
+              <label class="form-label">Confirm Password *</label>
+              <div class="input-group-custom">
+                <i class="fa-solid fa-lock input-icon"></i>
+                <input [type]="showRegPassword ? 'text' : 'password'" class="form-control ps-input"
+                       [(ngModel)]="regConfirmPassword" name="regConfirmPassword"
+                       placeholder="Repeat password" required autocomplete="new-password">
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 login-btn" [disabled]="loading">
+            <span *ngIf="!loading"><i class="fa-solid fa-user-plus me-2"></i>Create Account</span>
+            <span *ngIf="loading"><i class="fa-solid fa-spinner fa-spin me-2"></i>Creating...</span>
+          </button>
+        </form>
+        <p class="switch-hint">
+          Already have an account? <a (click)="switchTab('login')">Sign in</a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>

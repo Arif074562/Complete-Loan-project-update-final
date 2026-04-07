@@ -1,0 +1,137 @@
+<div class="fade-in">
+  <!-- Welcome Banner -->
+  <div class="welcome-banner">
+    <div class="welcome-text">
+      <h2>Good day, {{ auth.getCurrentUser()?.name }}! 👋</h2>
+      <p>{{ isCustomer ? 'Track your loans and upcoming payments.' : 'Here\'s what\'s happening with your loan portfolio today.' }}</p>
+    </div>
+    <div class="welcome-graphic">
+      <i class="fa-solid fa-chart-line"></i>
+    </div>
+  </div>
+
+  <!-- Customer: Upcoming Payment Alert -->
+  <div class="payment-alert" *ngIf="isCustomer && upcomingPayment">
+    <div class="payment-alert-icon"><i class="fa-solid fa-calendar-check"></i></div>
+    <div class="payment-alert-body">
+      <div class="payment-alert-title">Upcoming EMI Payment</div>
+      <div class="payment-alert-text">{{ upcomingPayment.text }}</div>
+    </div>
+    <span class="payment-alert-badge">Due Soon</span>
+  </div>
+
+  <!-- Customer: All Payment Reminders -->
+  <div class="card p-0" *ngIf="isCustomer && paymentReminders.length > 0">
+    <div class="card-header-custom">
+      <div><h3 class="card-title">Your Payment Schedule</h3><p class="card-subtitle">Upcoming EMI installments</p></div>
+      <span class="record-count">{{ paymentReminders.length }} installments</span>
+    </div>
+    <table class="table-modern">
+      <thead><tr><th>Installment</th><th>Due Date</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let r of paymentReminders">
+          <td>{{ r.text.split('Installment #')[1]?.replace(')', '') || '—' }}</td>
+          <td>{{ r.dueDate | date:'mediumDate' }}</td>
+          <td><strong>₹{{ r.amount | number:'1.2-2' }}</strong></td>
+          <td>
+            <span class="status-badge" [ngClass]="isOverdue(r.dueDate!) ? 'badge-danger' : 'badge-warning'">
+              {{ isOverdue(r.dueDate!) ? 'OVERDUE' : 'PENDING' }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card" *ngIf="!isCustomer">
+      <div class="stat-icon" style="background: #ede9fe; color: #6366f1;"><i class="fa-solid fa-users"></i></div>
+      <div><div class="stat-value">{{ stats.customers }}</div><div class="stat-label">Total Customers</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #dbeafe; color: #0ea5e9;"><i class="fa-solid fa-file-invoice"></i></div>
+      <div><div class="stat-value">{{ stats.applications }}</div><div class="stat-label">{{ isCustomer ? 'My Applications' : 'Loan Applications' }}</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #d1fae5; color: #10b981;"><i class="fa-solid fa-box-open"></i></div>
+      <div><div class="stat-value">{{ stats.products }}</div><div class="stat-label">Loan Products</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #fef3c7; color: #f59e0b;"><i class="fa-solid fa-rotate"></i></div>
+      <div><div class="stat-value">{{ stats.accounts }}</div><div class="stat-label">{{ isCustomer ? 'Active Loans' : 'Active Accounts' }}</div></div>
+    </div>
+    <!-- Customer: Disbursed Account Balance -->
+    <div class="stat-card" *ngIf="isCustomer && myAccountBalance > 0">
+      <div class="stat-icon" style="background: #d1fae5; color: #10b981;"><i class="fa-solid fa-wallet"></i></div>
+      <div>
+        <div class="stat-value" style="font-size:18px">₹{{ myAccountBalance | number }}</div>
+        <div class="stat-label">Outstanding Balance</div>
+        <div style="font-size:11px; color: var(--text-secondary); margin-top:2px">Account #{{ myAccountId }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- Recent Applications -->
+    <div class="card p-0">
+      <div class="card-header-custom">
+        <div>
+          <h3 class="card-title">{{ isCustomer ? 'My Loan Applications' : 'Recent Applications' }}</h3>
+          <p class="card-subtitle">{{ isCustomer ? 'Your application status updates' : 'Latest loan application submissions' }}</p>
+        </div>
+        <a routerLink="/loan-applications" class="btn btn-outline-primary btn-sm">View All</a>
+      </div>
+      <div *ngIf="loading" class="loading-state">
+        <i class="fa-solid fa-spinner fa-spin"></i> Loading...
+      </div>
+      <div *ngIf="!loading && recentApplications.length === 0" class="empty-state">
+        <i class="fa-solid fa-inbox"></i>
+        <p>No applications yet</p>
+      </div>
+      <table class="table-modern" *ngIf="!loading && recentApplications.length > 0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Amount</th>
+            <th>Tenure</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let app of recentApplications">
+            <td><span class="id-badge">{{ app.applicationId ? '#' + app.applicationId : '—' }}</span></td>
+            <td>{{ customerName(app.customerId) }}</td>
+            <td>₹{{ app.requestedAmount | number }}</td>
+            <td>{{ app.tenureMonths }} mo</td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(app.status)">
+                {{ app.status }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-panel">
+      <div class="card-header-custom">
+        <div>
+          <h3 class="card-title">Quick Actions</h3>
+          <p class="card-subtitle">Common tasks at a glance</p>
+        </div>
+      </div>
+      <div class="quick-links-grid">
+        <a *ngFor="let q of quickLinks" [routerLink]="q.route" class="quick-link-card">
+          <div class="ql-icon" [style.background]="q.color + '20'" [style.color]="q.color">
+            <i class="fa-solid {{ q.icon }}"></i>
+          </div>
+          <span>{{ q.label }}</span>
+          <i class="fa-solid fa-arrow-right ql-arrow"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

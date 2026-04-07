@@ -1,0 +1,108 @@
+<div class="fade-in">
+  <div class="page-header">
+    <div><h2 class="page-title">Collections</h2><p class="page-subtitle">Manage delinquency records and collection actions</p></div>
+    <button class="btn btn-primary" (click)="openDelModal()">
+      <i class="fa-solid fa-plus me-2"></i>New Delinquency
+    </button>
+  </div>
+
+  <div class="alert alert-success" *ngIf="success"><i class="fa-solid fa-circle-check me-2"></i>{{ success }}</div>
+
+  <div class="collections-layout">
+    <div class="card p-0">
+      <div class="table-toolbar"><span class="record-count">{{ delinquencies.length }} delinquency records</span></div>
+      <div *ngIf="loading" class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
+      <div class="table-responsive" *ngIf="!loading">
+        <table class="table-modern">
+          <thead><tr><th>ID</th><th>Account ID</th><th>Days Past Due</th><th>Bucket</th><th>Status</th><th>Recorded Date</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let d of delinquencies">
+              <td><span class="id-badge">#{{ d.delinquencyId }}</span></td>
+              <td>#{{ d.loanAccountId }}</td>
+              <td><span class="days-chip" [class.critical]="d.daysPastDue > 90">{{ d.daysPastDue }} days</span></td>
+              <td><span class="status-badge" [ngClass]="getBucketClass(d.bucket)">{{ d.bucket }}</span></td>
+              <td><span class="status-badge" [ngClass]="getStatusClass(d.status)">{{ d.status }}</span></td>
+              <td>{{ d.recordedDate | date:'mediumDate' }}</td>
+              <td class="actions-cell">
+                <button class="action-btn" (click)="openAction(d.loanAccountId)" title="Add Action"><i class="fa-solid fa-plus"></i></button>
+                <button class="action-btn" (click)="viewActions(d.loanAccountId)" title="View Actions"><i class="fa-solid fa-list"></i></button>
+                <button class="action-btn resolve-btn" (click)="resolve(d.delinquencyId)" title="Resolve" *ngIf="d.status !== 'RESOLVED'"><i class="fa-solid fa-check"></i></button>
+              </td>
+            </tr>
+            <tr *ngIf="delinquencies.length===0"><td colspan="7" class="empty-state">No delinquency records found</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Actions Panel -->
+    <div class="card p-0 actions-panel" *ngIf="actions.length > 0">
+      <div class="card-header-custom"><h3 class="card-title">Actions — Delinquency #{{ selectedDelId }}</h3></div>
+      <table class="table-modern">
+        <thead><tr><th>ID</th><th>Type</th><th>Notes</th><th>Date</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let a of actions">
+            <td><span class="id-badge">#{{ a.actionId }}</span></td>
+            <td><span class="status-badge badge-info">{{ a.actionType }}</span></td>
+            <td>{{ a.notes }}</td>
+            <td>{{ a.actionDate | date:'mediumDate' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Delinquency Modal -->
+<div class="modal-overlay" *ngIf="showDelModal" (click)="showDelModal=false">
+  <div class="modal-box fade-in" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h5>New Delinquency Record</h5><button class="close-btn" (click)="showDelModal=false"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+      <form (ngSubmit)="saveDel()" #f="ngForm">
+        <div class="form-grid">
+          <div class="mb-3"><label class="form-label">Loan Account ID *</label><input type="number" class="form-control" [(ngModel)]="delForm.loanAccountId" name="laid" required></div>
+          <div class="mb-3"><label class="form-label">Days Past Due *</label><input type="number" class="form-control" [(ngModel)]="delForm.daysPastDue" name="dpd" required></div>
+          <div class="mb-3 col-span-2"><label class="form-label">Bucket *</label>
+            <select class="form-select" [(ngModel)]="delForm.bucket" name="bkt" required>
+              <option *ngFor="let b of buckets" [value]="b">{{ b }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="showDelModal=false">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving || f.invalid">
+            <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="saving"></i>Create
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Action Modal -->
+<div class="modal-overlay" *ngIf="showActionModal" (click)="showActionModal=false">
+  <div class="modal-box fade-in" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h5>Record Collection Action</h5><button class="close-btn" (click)="showActionModal=false"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+      <form (ngSubmit)="saveAction()" #af="ngForm">
+        <div class="form-grid">
+          <div class="mb-3"><label class="form-label">Action Type *</label>
+            <select class="form-select" [(ngModel)]="actionForm.actionType" name="at" required>
+              <option *ngFor="let t of actionTypes" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+          <div class="mb-3"><label class="form-label">Action Date *</label><input type="date" class="form-control" [(ngModel)]="actionForm.actionDate" name="ad" required></div>
+          <div class="mb-3 col-span-2"><label class="form-label">Notes</label><textarea class="form-control" rows="3" [(ngModel)]="actionForm.notes" name="notes"></textarea></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="showActionModal=false">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving || af.invalid">
+            <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="saving"></i>Record
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,106 @@
+<!-- Navbar -->
+<nav class="home-nav">
+  <div class="home-nav-brand">
+    <div class="home-brand-icon"><i class="fa-solid fa-landmark"></i></div>
+    <span class="home-brand-name">JG<span>Pay</span></span>
+  </div>
+  <div class="home-nav-actions">
+    <button class="btn-outline-home" (click)="goLogin()">Sign In</button>
+    <button class="btn-solid-home" (click)="goRegister()">Get Started</button>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero-section">
+  <div class="hero-content">
+    <div class="hero-badge"><i class="fa-solid fa-bolt me-2"></i>Modern Loan Management Platform — JGPay</div>
+    <h1 class="hero-title">
+      Manage Loans<br>
+      <span class="hero-highlight">Smarter & Faster</span>
+    </h1>
+    <p class="hero-subtitle">
+      LoanSys360 is a full-cycle loan management system — from customer onboarding and
+      underwriting to disbursement, servicing and collections. All in one place.
+    </p>
+    <div class="hero-actions">
+      <button class="btn-hero-primary" (click)="goRegister()">
+        <i class="fa-solid fa-user-plus me-2"></i>Create Free Account
+      </button>
+      <button class="btn-hero-outline" (click)="goLogin()">
+        <i class="fa-solid fa-right-to-bracket me-2"></i>Sign In
+      </button>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-card-stack">
+      <div class="hero-card hc-1">
+        <i class="fa-solid fa-circle-check"></i>
+        <span>Loan Approved</span>
+        <strong>₹5,00,000</strong>
+      </div>
+      <div class="hero-card hc-2">
+        <i class="fa-solid fa-chart-line"></i>
+        <span>Portfolio Growth</span>
+        <strong>+24% this month</strong>
+      </div>
+      <div class="hero-card hc-3">
+        <i class="fa-solid fa-users"></i>
+        <span>Active Customers</span>
+        <strong>500+</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="stats-section">
+  <div class="stats-grid">
+    @for (s of stats; track s.label) {
+      <div class="stat-item">
+        <div class="stat-val">{{ s.value }}</div>
+        <div class="stat-lbl">{{ s.label }}</div>
+      </div>
+    }
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features-section">
+  <div class="section-header">
+    <h2>Everything you need to manage loans</h2>
+    <p>A complete suite of tools for every stage of the loan lifecycle</p>
+  </div>
+  <div class="features-grid">
+    @for (f of features; track f.title) {
+      <div class="feature-card">
+        <div class="feature-icon-box" [style.background]="f.bg" [style.color]="f.color">
+          <i class="fa-solid {{ f.icon }}"></i>
+        </div>
+        <h3>{{ f.title }}</h3>
+        <p>{{ f.desc }}</p>
+      </div>
+    }
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-box">
+    <h2>Ready to get started?</h2>
+    <p>Join LoanSys360 today and streamline your entire loan management process.</p>
+    <div class="cta-actions">
+      <button class="btn-hero-primary" (click)="goRegister()">
+        <i class="fa-solid fa-user-plus me-2"></i>Register Now
+      </button>
+      <button class="btn-hero-outline-white" (click)="goLogin()">
+        <i class="fa-solid fa-right-to-bracket me-2"></i>Sign In
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="home-footer">
+  <div class="home-brand-icon sm"><i class="fa-solid fa-landmark"></i></div>
+  <span>JG<strong>Pay</strong> &copy; 2025 — Modern Loan Lifecycle Management</span>
+</footer>

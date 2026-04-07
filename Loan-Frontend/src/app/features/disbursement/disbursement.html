@@ -1,0 +1,102 @@
+<div class="fade-in">
+  <div class="page-header">
+    <div><h2 class="page-title">Disbursement</h2><p class="page-subtitle">Manage fund disbursements and repayment schedules</p></div>
+    <button class="btn btn-primary" (click)="openCreate()">
+      <i class="fa-solid fa-plus me-2"></i>New Disbursement
+    </button>
+  </div>
+
+  <div class="alert alert-success" *ngIf="success"><i class="fa-solid fa-circle-check me-2"></i>{{ success }}</div>
+
+  <div class="search-bar card">
+    <input type="number" class="form-control" [(ngModel)]="searchAppId" placeholder="Search by Application ID..." style="max-width:300px">
+    <button class="btn btn-primary" (click)="search()"><i class="fa-solid fa-search me-2"></i>Search</button>
+  </div>
+
+  <div class="disbursement-detail card" *ngIf="disbursement">
+    <div class="detail-header">
+      <div class="detail-icon"><i class="fa-solid fa-money-bill-transfer"></i></div>
+      <div>
+        <h4>Disbursement #{{ disbursement.id }}</h4>
+        <p>Application #{{ disbursement.applicationId }}</p>
+      </div>
+      <span class="status-badge ms-auto" [ngClass]="getStatusClass(disbursement.status)">{{ disbursement.status }}</span>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="di-label">Amount</div><div class="di-value">₹{{ disbursement.amount | number }}</div></div>
+      <div class="detail-item"><div class="di-label">Bank</div><div class="di-value">{{ disbursement.bankName }}</div></div>
+      <div class="detail-item"><div class="di-label">Account</div><div class="di-value">{{ disbursement.accountNumber }}</div></div>
+      <div class="detail-item"><div class="di-label">IFSC</div><div class="di-value">{{ disbursement.ifscCode }}</div></div>
+      <div class="detail-item"><div class="di-label">Date</div><div class="di-value">{{ disbursement.disbursementDate | date:'mediumDate' }}</div></div>
+    </div>
+    <div class="detail-actions">
+      <select class="form-select" style="width:200px" (change)="updateStatus($any($event.target).value)">
+        <option value="">Update Status...</option>
+        <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+      </select>
+      <button class="btn btn-outline-primary" (click)="showScheduleModal=true">
+        <i class="fa-solid fa-calendar-days me-2"></i>Generate Schedule
+      </button>
+    </div>
+  </div>
+
+  <!-- Repayment Schedule -->
+  <div class="card p-0" *ngIf="schedule.length > 0">
+    <div class="card-header-custom"><h3 class="card-title">Repayment Schedule</h3><span class="record-count">{{ schedule.length }} installments</span></div>
+    <table class="table-modern">
+      <thead><tr><th>#</th><th>Due Date</th><th>Principal</th><th>Interest</th><th>Total EMI</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let s of schedule">
+          <td>{{ s.installmentNumber }}</td>
+          <td>{{ s.dueDate | date:'mediumDate' }}</td>
+          <td>₹{{ s.principalAmount | number:'1.2-2' }}</td>
+          <td>₹{{ s.interestAmount | number:'1.2-2' }}</td>
+          <td><strong>₹{{ s.totalAmount | number:'1.2-2' }}</strong></td>
+          <td><span class="status-badge" [ngClass]="getInstallmentClass(s.status)">{{ s.status }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create Modal -->
+<div class="modal-overlay" *ngIf="showCreateModal" (click)="showCreateModal=false">
+  <div class="modal-box fade-in" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h5>New Disbursement</h5><button class="close-btn" (click)="showCreateModal=false"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+      <form (ngSubmit)="create()" #f="ngForm">
+        <div class="form-grid">
+          <div class="mb-3"><label class="form-label">Application ID *</label><input type="number" class="form-control" [(ngModel)]="form.applicationId" name="aid" required></div>
+          <div class="mb-3"><label class="form-label">Amount (₹) *</label><input type="number" class="form-control" [(ngModel)]="form.amount" name="amt" required></div>
+          <div class="mb-3"><label class="form-label">Bank Name *</label><input class="form-control" [(ngModel)]="form.bankName" name="bn" required></div>
+          <div class="mb-3"><label class="form-label">Account Number *</label><input class="form-control" [(ngModel)]="form.accountNumber" name="an" required></div>
+          <div class="mb-3"><label class="form-label">IFSC Code *</label><input class="form-control" [(ngModel)]="form.ifscCode" name="ifsc" required></div>
+          <div class="mb-3"><label class="form-label">Disbursement Date *</label><input type="date" class="form-control" [(ngModel)]="form.disbursementDate" name="dd" required></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="showCreateModal=false">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving || f.invalid">
+            <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="saving"></i>Create
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule Modal -->
+<div class="modal-overlay" *ngIf="showScheduleModal" (click)="showScheduleModal=false">
+  <div class="modal-box fade-in" style="width:400px" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h5>Generate Repayment Schedule</h5><button class="close-btn" (click)="showScheduleModal=false"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="mb-3"><label class="form-label">Schedule Start Date *</label><input type="date" class="form-control" [(ngModel)]="scheduleStartDate"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" (click)="showScheduleModal=false">Cancel</button>
+        <button class="btn btn-primary" (click)="generateSchedule()" [disabled]="saving || !scheduleStartDate">
+          <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="saving"></i>Generate
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

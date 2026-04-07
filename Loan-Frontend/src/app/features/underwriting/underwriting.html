@@ -1,0 +1,197 @@
+<div class="fade-in">
+  <div class="page-header">
+    <div><h2 class="page-title">Underwriting</h2><p class="page-subtitle">Credit risk assessment and loan decisions</p></div>
+    <button class="btn btn-outline-primary" (click)="showScoreModal=true; error=''; scoreForm=emptyScore()">
+      <i class="fa-solid fa-star me-2"></i>Add Credit Score
+    </button>
+  </div>
+
+  <div class="alert alert-success" *ngIf="success"><i class="fa-solid fa-circle-check me-2"></i>{{ success }}</div>
+
+  <!-- Tabs -->
+  <div class="tabs-bar">
+    <button class="tab-btn" [class.active]="activeTab==='pending'" (click)="activeTab='pending'; loadPendingApps()">
+      <i class="fa-solid fa-clock me-2"></i>Pending Review
+      <span class="tab-badge" *ngIf="pendingApps.length > 0">{{ pendingApps.length }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeTab==='history'" (click)="activeTab='history'">
+      <i class="fa-solid fa-history me-2"></i>Decision History
+    </button>
+  </div>
+
+  <!-- Pending Applications Tab -->
+  <div *ngIf="activeTab==='pending'">
+    <div class="card p-0">
+      <div class="table-toolbar">
+        <span class="record-count">{{ pendingApps.length }} applications awaiting review</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table-modern">
+          <thead>
+            <tr><th>App ID</th><th>Customer ID</th><th>Product ID</th><th>Amount</th><th>Tenure</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of pendingApps">
+              <td><span class="id-badge">#{{ a.applicationId }}</span></td>
+              <td>#{{ a.customerId }}</td>
+              <td>#{{ a.productId }}</td>
+              <td>₹{{ a.requestedAmount | number }}</td>
+              <td>{{ a.tenureMonths }} mo</td>
+              <td><span class="status-badge" [ngClass]="getAppStatusClass(a.status)">{{ a.status }}</span></td>
+              <td>
+                <button class="btn btn-primary btn-sm" (click)="openDecision(a)">
+                  <i class="fa-solid fa-gavel me-1"></i>Review
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="pendingApps.length===0">
+              <td colspan="7" class="empty-state">No applications pending review</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Tab -->
+  <div *ngIf="activeTab==='history'">
+    <div class="search-bar card">
+      <input type="number" class="form-control" [(ngModel)]="searchAppId" placeholder="Search by Application ID..." style="max-width:300px">
+      <button class="btn btn-primary" (click)="searchDecisions()"><i class="fa-solid fa-search me-2"></i>Search</button>
+    </div>
+
+    <div class="history-grid">
+      <!-- Decisions -->
+      <div class="card p-0">
+        <div class="card-header-custom"><h3 class="card-title"><i class="fa-solid fa-gavel me-2"></i>Decisions</h3></div>
+        <table class="table-modern">
+          <thead><tr><th>ID</th><th>App ID</th><th>Decision</th><th>Remarks</th><th>Date</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let d of decisions">
+              <td><span class="id-badge">#{{ d.decisionId }}</span></td>
+              <td>#{{ d.applicationId }}</td>
+              <td><span class="status-badge" [ngClass]="getDecisionClass(d.decision)">{{ d.decision }}</span></td>
+              <td>{{ d.remarks }}</td>
+              <td>{{ d.decisionDate | date:'mediumDate' }}</td>
+            </tr>
+            <tr *ngIf="decisions.length===0"><td colspan="5" class="empty-state">Search to view decisions</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Credit Scores -->
+      <div class="card p-0">
+        <div class="card-header-custom"><h3 class="card-title"><i class="fa-solid fa-star me-2"></i>Credit Scores</h3></div>
+        <table class="table-modern">
+          <thead><tr><th>ID</th><th>App ID</th><th>Score</th><th>Report Ref</th><th>Date</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let s of creditScores">
+              <td><span class="id-badge">#{{ s.scoreId }}</span></td>
+              <td>#{{ s.applicationId }}</td>
+              <td><span class="score-chip" [ngClass]="getScoreClass(s.scoreValue)">{{ s.scoreValue }}</span></td>
+              <td>{{ s.reportRef }}</td>
+              <td>{{ s.generatedDate | date:'mediumDate' }}</td>
+            </tr>
+            <tr *ngIf="creditScores.length===0"><td colspan="5" class="empty-state">Search to view scores</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Decision Modal -->
+<div class="modal-overlay" *ngIf="showDecisionModal" (click)="showDecisionModal=false">
+  <div class="modal-box fade-in" style="width:640px" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5><i class="fa-solid fa-gavel me-2"></i>Review Application #{{ selectedApp?.applicationId }}</h5>
+      <button class="close-btn" (click)="showDecisionModal=false"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <!-- App Summary -->
+      <div class="app-summary" *ngIf="selectedApp">
+        <div class="summary-item"><span class="s-label">Customer ID</span><span class="s-value">#{{ selectedApp.customerId }}</span></div>
+        <div class="summary-item"><span class="s-label">Product ID</span><span class="s-value">#{{ selectedApp.productId }}</span></div>
+        <div class="summary-item"><span class="s-label">Amount</span><span class="s-value">₹{{ selectedApp.requestedAmount | number }}</span></div>
+        <div class="summary-item"><span class="s-label">Tenure</span><span class="s-value">{{ selectedApp.tenureMonths }} months</span></div>
+      </div>
+
+      <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+
+      <!-- Decision Form -->
+      <form (ngSubmit)="saveDecision()" #f="ngForm">
+        <div class="form-grid">
+          <div class="mb-3">
+            <label class="form-label">Decision *</label>
+            <div class="decision-btns">
+              <button type="button" class="dec-btn approve" [class.selected]="decisionForm.decision==='APPROVE'" (click)="decisionForm.decision='APPROVE'">
+                <i class="fa-solid fa-circle-check"></i> APPROVE
+              </button>
+              <button type="button" class="dec-btn conditional" [class.selected]="decisionForm.decision==='CONDITIONAL'" (click)="decisionForm.decision='CONDITIONAL'">
+                <i class="fa-solid fa-circle-exclamation"></i> CONDITIONAL
+              </button>
+              <button type="button" class="dec-btn reject" [class.selected]="decisionForm.decision==='REJECT'" (click)="decisionForm.decision='REJECT'">
+                <i class="fa-solid fa-circle-xmark"></i> REJECT
+              </button>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Credit Score</label>
+            <input type="number" class="form-control" [(ngModel)]="scoreForm.scoreValue" name="sc" min="0" max="900" placeholder="0–900">
+          </div>
+          <div class="mb-3 col-span-2">
+            <label class="form-label">Remarks *</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="decisionForm.remarks" name="rem" required placeholder="Explain the decision..."></textarea>
+          </div>
+          <div class="mb-3 col-span-2">
+            <label class="form-label">Report Reference</label>
+            <input class="form-control" [(ngModel)]="scoreForm.reportRef" name="rr" placeholder="e.g. CIBIL-2024-XXXXX">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="showDecisionModal=false">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving || f.invalid">
+            <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="saving"></i>Submit Decision
+          </button>
+        </div>
+      </form>
+
+      <!-- Existing Decisions -->
+      <div *ngIf="decisions.length > 0" class="mt-3">
+        <div class="section-divider">Previous Decisions</div>
+        <table class="table-modern">
+          <thead><tr><th>Decision</th><th>Remarks</th><th>Date</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let d of decisions">
+              <td><span class="status-badge" [ngClass]="getDecisionClass(d.decision)">{{ d.decision }}</span></td>
+              <td>{{ d.remarks }}</td>
+              <td>{{ d.decisionDate | date:'mediumDate' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Credit Score Modal -->
+<div class="modal-overlay" *ngIf="showScoreModal" (click)="showScoreModal=false">
+  <div class="modal-box fade-in" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h5>Add Credit Score</h5><button class="close-btn" (click)="showScoreModal=false"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+      <form (ngSubmit)="saveScore()" #sf="ngForm">
+        <div class="form-grid">
+          <div class="mb-3"><label class="form-label">Application ID *</label><input type="number" class="form-control" [(ngModel)]="scoreForm.applicationId" name="aid" required></div>
+          <div class="mb-3"><label class="form-label">Score Value (0–900) *</label><input type="number" class="form-control" [(ngModel)]="scoreForm.scoreValue" name="sc" min="0" max="900" required></div>
+          <div class="mb-3 col-span-2"><label class="form-label">Report Reference</label><input class="form-control" [(ngModel)]="scoreForm.reportRef" name="rr"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="showScoreModal=false">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving || sf.invalid">
+            <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="saving"></i>Save Score
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

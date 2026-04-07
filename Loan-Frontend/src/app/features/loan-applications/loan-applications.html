@@ -1,0 +1,102 @@
+<div class="fade-in">
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Loan Applications</h2>
+      <p class="page-subtitle">{{ isCustomer ? 'Your loan application history' : 'Review and manage all loan applications' }}</p>
+    </div>
+    <button class="btn btn-primary" *ngIf="isAdmin" (click)="openCreate()">
+      <i class="fa-solid fa-plus me-2"></i>New Application
+    </button>
+  </div>
+
+  <div class="alert alert-success" *ngIf="success"><i class="fa-solid fa-circle-check me-2"></i>{{ success }}</div>
+
+  <div class="card p-0">
+    <div class="table-toolbar"><span class="record-count">{{ totalElements }} applications</span></div>
+    <div *ngIf="loading" class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table-modern">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Product</th>
+            <th>Amount</th>
+            <th>Tenure</th>
+            <th>Status</th>
+            <th *ngIf="isAdmin">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of applications; let i = index">
+            <td><span class="id-badge">#{{ a.applicationId }}</span></td>
+            <td>{{ customerName(a.customerId) }}</td>
+            <td>{{ productName(a.productId) }}</td>
+            <td>₹{{ a.requestedAmount | number }}</td>
+            <td>{{ a.tenureMonths }} mo</td>
+            <td>
+              <select class="status-select" *ngIf="isAdmin" 
+                [attr.data-index]="i"
+                (change)="handleStatusChange($event)">
+                <option *ngFor="let s of statuses" [value]="s" [selected]="s === a.status">{{ s }}</option>
+              </select>
+              <span class="status-badge" *ngIf="!isAdmin" [ngClass]="getStatusClass(a.status)">{{ a.status }}</span>
+            </td>
+            <td *ngIf="isAdmin">
+              <button class="action-btn approve-btn" (click)="approve(a.applicationId)"
+                *ngIf="a.status === 'PENDING' || a.status === 'UNDER_REVIEW'" title="Approve">
+                <i class="fa-solid fa-circle-check"></i>
+              </button>
+              <button class="action-btn reject-btn" (click)="reject(a.applicationId)"
+                *ngIf="a.status === 'PENDING' || a.status === 'UNDER_REVIEW'" title="Reject">
+                <i class="fa-solid fa-circle-xmark"></i>
+              </button>
+              <button class="action-btn" (click)="openEdit(a)" title="Edit">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="applications.length === 0">
+            <td [attr.colspan]="isAdmin ? 7 : 6" class="empty-state">
+              {{ isCustomer ? 'You have no loan applications yet. Go to Products to apply.' : 'No applications found' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-footer" *ngIf="totalPages > 1">
+      <nav><ul class="pagination mb-0">
+        <li class="page-item" [class.disabled]="currentPage===0"><a class="page-link" (click)="goPage(currentPage-1)">‹</a></li>
+        <li class="page-item" *ngFor="let p of pages" [class.active]="p===currentPage"><a class="page-link" (click)="goPage(p)">{{ p+1 }}</a></li>
+        <li class="page-item" [class.disabled]="currentPage===totalPages-1"><a class="page-link" (click)="goPage(currentPage+1)">›</a></li>
+      </ul></nav>
+    </div>
+  </div>
+</div>
+
+<!-- Admin: Create/Edit Modal -->
+<div class="modal-overlay" *ngIf="showModal && isAdmin" (click)="showModal=false">
+  <div class="modal-box fade-in" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5>{{ editMode ? 'Edit Application' : 'New Loan Application' }}</h5>
+      <button class="close-btn" (click)="showModal=false"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+      <form (ngSubmit)="save()" #f="ngForm">
+        <div class="form-grid">
+          <div class="mb-3"><label class="form-label">Customer ID *</label><input type="number" class="form-control" [(ngModel)]="form.customerId" name="cid" required></div>
+          <div class="mb-3"><label class="form-label">Product ID *</label><input type="number" class="form-control" [(ngModel)]="form.productId" name="pid" required></div>
+          <div class="mb-3"><label class="form-label">Requested Amount (₹) *</label><input type="number" class="form-control" [(ngModel)]="form.requestedAmount" name="amt" required></div>
+          <div class="mb-3"><label class="form-label">Tenure (Months) *</label><input type="number" class="form-control" [(ngModel)]="form.tenureMonths" name="ten" required></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="showModal=false">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving || f.invalid">
+            <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="saving"></i>{{ editMode ? 'Update' : 'Submit' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

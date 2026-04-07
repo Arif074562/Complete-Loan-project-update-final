@@ -1,0 +1,20 @@
+.table-toolbar { padding: 16px 24px; border-bottom: 1px solid var(--border); }
+.record-count { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+.table-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
+.table-responsive { overflow-x: auto; }
+.loading-state, .empty-state { padding: 40px; text-align: center; color: var(--text-secondary); }
+.id-badge { background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.status-select { border: 1.5px solid var(--border); border-radius: 6px; padding: 3px 8px; font-size: 12px; background: #fff; cursor: pointer; }
+.action-btn { background: var(--body-bg); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; cursor: pointer; color: var(--text-secondary); transition: all .2s; font-size: 13px; margin-right: 4px; }
+.action-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+.approve-btn:hover { background: #d1fae5 !important; color: #065f46 !important; border-color: #10b981 !important; }
+.reject-btn:hover { background: #fee2e2 !important; color: #991b1b !important; border-color: #ef4444 !important; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+.modal-box { background: #fff; border-radius: var(--radius); width: 600px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); }
+.modal-header h5 { font-size: 16px; font-weight: 700; }
+.close-btn { background: none; border: none; font-size: 18px; color: var(--text-secondary); cursor: pointer; padding: 4px; border-radius: 6px; }
+.close-btn:hover { background: var(--body-bg); }
+.modal-body { padding: 24px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding-top: 16px; border-top: 1px solid var(--border); margin-top: 8px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }

@@ -1,0 +1,69 @@
+<header class="navbar-top">
+  <div class="navbar-left">
+    <button class="menu-btn" (click)="toggleSidebar.emit()">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="page-info">
+      <h1 class="nav-title">{{ pageTitle }}</h1>
+    </div>
+  </div>
+  <div class="navbar-right">
+    <button class="theme-btn" (click)="toggleTheme(); $event.stopPropagation()" [title]="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+      <i class="fa-solid" [class.fa-moon]="!isDark" [class.fa-sun]="isDark"></i>
+    </button>
+    <div class="nav-badge-wrapper" (click)="showNotifMenu=!showNotifMenu; $event.stopPropagation()">
+      <div class="nav-badge">
+        <i class="fa-solid fa-bell"></i>
+        <span class="badge-count" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+      </div>
+      <div class="notif-dropdown" *ngIf="showNotifMenu" (click)="$event.stopPropagation()">
+        <div class="notif-header">
+          <span class="notif-title">Notifications</span>
+          <button class="mark-read-btn" *ngIf="unreadCount > 0" (click)="markAllRead()">
+            <i class="fa-solid fa-check-double"></i> Mark all read
+          </button>
+        </div>
+        <div class="notif-list" *ngIf="unreadCount > 0">
+          <div class="notif-item" *ngFor="let n of notifications">
+            <div class="notif-icon" [style.background]="n.color + '20'" [style.color]="n.color">
+              <i class="fa-solid {{ n.icon }}"></i>
+            </div>
+            <div class="notif-body">
+              <div class="notif-text">{{ n.text }}</div>
+              <div class="notif-time">{{ n.time }}</div>
+            </div>
+            <button class="notif-dismiss" (click)="dismiss(n.id); $event.stopPropagation()" title="Dismiss">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+        <div class="notif-empty" *ngIf="unreadCount === 0">
+          <i class="fa-solid fa-bell-slash"></i>
+          <p>No new notifications</p>
+        </div>
+      </div>
+    </div>
+    <div class="user-chip-wrapper" (click)="showUserMenu=!showUserMenu; $event.stopPropagation()">
+      <div class="user-chip">
+        <div class="chip-avatar">{{ auth.getCurrentUser()?.name?.charAt(0)?.toUpperCase() }}</div>
+        <div class="chip-info">
+          <span class="chip-name">{{ auth.getCurrentUser()?.name }}</span>
+          <span class="chip-role">{{ auth.getCurrentUser()?.role }}</span>
+        </div>
+      </div>
+      <div class="user-dropdown" *ngIf="showUserMenu" (click)="$event.stopPropagation()">
+        <div class="dropdown-user-info">
+          <div class="chip-avatar large">{{ auth.getCurrentUser()?.name?.charAt(0)?.toUpperCase() }}</div>
+          <div>
+            <div class="chip-name">{{ auth.getCurrentUser()?.name }}</div>
+            <div class="chip-role">{{ auth.getCurrentUser()?.role }}</div>
+          </div>
+        </div>
+        <hr class="dropdown-divider">
+        <button class="dropdown-item logout" (click)="auth.logout(); showUserMenu=false">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
