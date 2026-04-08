@@ -35,7 +35,7 @@
                 <span class="overdue-chip" *ngIf="isOverdue(a)">{{ daysPastDue(a) }}d overdue</span>
               </td>
               <td>
-                <select class="status-select" [value]="a.status" (change)="updateStatus(a.id, $any($event.target).value)">
+                <select class="status-select" [(ngModel)]="a.status" (ngModelChange)="updateStatus(a.id, $event)">
                   <option *ngFor="let s of accountStatuses" [value]="s">{{ s }}</option>
                 </select>
               </td>

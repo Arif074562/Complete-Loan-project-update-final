@@ -46,9 +46,13 @@ public class LoanAccountController {
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<LoanAccountResponseDTO>> updateStatus(@PathVariable Long id,
-                                                                            @RequestBody LoanAccountStatus status) {
-        log.info("PATCH /api/loan-accounts/{}/status", id);
-        LoanAccountResponseDTO dto = loanAccountService.updateStatus(id, status);
+                                                                            @RequestBody String status) {
+        log.info("PATCH /api/loan-accounts/{}/status - raw status: {}", id, status);
+        String cleanStatus = status.replace("\"", "").trim();
+        log.info("Cleaned status: {}", cleanStatus);
+        LoanAccountStatus accountStatus = LoanAccountStatus.valueOf(cleanStatus);
+        LoanAccountResponseDTO dto = loanAccountService.updateStatus(id, accountStatus);
+        log.info("Status updated successfully to: {}", accountStatus);
         return ResponseEntity.ok(ApiResponse.success("Status updated", dto));
     }
 }

@@ -33,7 +33,6 @@ public class LoanAccountServiceImpl implements LoanAccountService {
     public LoanAccountResponseDTO create(LoanAccountRequestDTO request) {
         log.info("Creating loan account for application: {}", request.getApplicationId());
         LoanAccount entity = loanAccountMapper.toEntity(request);
-        if (entity.getStartDate() == null) entity.setStartDate(LocalDate.now());
         entity.setStatus(LoanAccountStatus.ACTIVE);
         entity = loanAccountRepository.save(entity);
         log.info("Loan account created: {}", entity.getLoanAccountId());
@@ -83,8 +82,8 @@ public class LoanAccountServiceImpl implements LoanAccountService {
             
             NotificationRequestDTO notification = NotificationRequestDTO.builder()
                     .userId(customerId)
-                    .message(String.format("Your loan account #%d has been created successfully! Amount: ₹%.2f", 
-                            account.getLoanAccountId(), account.getSanctionedAmount()))
+                    .message(String.format("Your loan account #%d has been created successfully! Outstanding Balance: ₹%.2f", 
+                            account.getLoanAccountId(), account.getOutstandingBalance()))
                     .category("LOAN_ACCOUNT")
                     .status("UNREAD")
                     .build();

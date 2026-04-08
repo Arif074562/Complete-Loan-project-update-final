@@ -1,0 +1,17 @@
+com\cts\servicing\enums\RepaymentStatus.class
+com\cts\servicing\dto\RepaymentResponseDTO.class
+com\cts\servicing\enums\RepaymentMode.class
+com\cts\servicing\enums\LoanAccountStatus.class
+com\cts\servicing\entity\LoanAccount.class
+com\cts\servicing\dto\LoanAccountResponseDTO$LoanAccountResponseDTOBuilder.class
+com\cts\servicing\dto\RepaymentRequestDTO.class
+com\cts\servicing\dto\RepaymentResponseDTO$RepaymentResponseDTOBuilder.class
+com\cts\servicing\entity\LoanAccount$LoanAccountBuilder.class
+com\cts\servicing\dto\LoanAccountRequestDTO$LoanAccountRequestDTOBuilder.class
+com\cts\servicing\dto\LoanAccountRequestDTO.class
+com\cts\servicing\entity\Repayment$RepaymentBuilder.class
+com\cts\servicing\dto\RepaymentRequestDTO$RepaymentRequestDTOBuilder.class
+com\cts\servicing\entity\Repayment.class
+com\cts\servicing\dto\LoanAccountResponseDTO.class
+com\cts\servicing\mapper\RepaymentMapper.class
+com\cts\servicing\mapper\LoanAccountMapper.class

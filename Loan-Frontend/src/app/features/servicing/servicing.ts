@@ -68,7 +68,26 @@ export class ServicingComponent implements OnInit {
   }
 
   updateStatus(id: number, status: string) {
-    this.svc.updateAccountStatus(id, status).subscribe({ next: () => this.load(), error: () => {} });
+    console.log('Updating status for account', id, 'to', status);
+    this.svc.updateAccountStatus(id, status).subscribe({ 
+      next: (response) => {
+        console.log('Status update response:', response);
+        console.log('Updated account status:', response.data?.status);
+        // Update the local array immediately
+        const account = this.accounts.find(a => a.id === id);
+        if (account) {
+          account.status = status;
+          console.log('Local account updated:', account);
+        }
+        // Also reload from server
+        this.load();
+      }, 
+      error: (err) => {
+        console.error('Status update failed:', err);
+        this.error = 'Failed to update status';
+        setTimeout(() => this.error = '', 3000);
+      }
+    });
   }
 
   openRepayment(id: number) {
